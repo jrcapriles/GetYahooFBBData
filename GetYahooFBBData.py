@@ -29,6 +29,8 @@ def main():
 	br.open("https://login.yahoo.com/config/login_verify2?&.src=ym&.intl=us")
 	br.select_form(nr=0)
 	br.form["username"] = username
+	submit_response = br.submit()
+	br.select_form(nr=0)
 	br.form["passwd"] = password
 	br.submit()
 	
@@ -71,13 +73,13 @@ def main():
 			
 		for player in players:
 			playerStats = []
-			pNum = count*(len(stats)-4)
+			pNum = count*(len(stats)-5)
 			playerData = str(player.findAll(text=True))
 			name = getName(playerData)
 			(team, pos) = getTeamAndPosition(playerData)
 			fanTeam = fanTeams[count+1]
 			playerStats.extend([name, team, pos, fanTeam])
-			for i in range(0, len(stats)-4):
+			for i in range(0, len(stats)-5):
 				tmp = str(dataList[pNum+i].findAll(text=True))
 				tmp = tmp[3:len(tmp)-2]
 				if tmp.find("/") != -1:
