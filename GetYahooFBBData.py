@@ -11,12 +11,20 @@ def main():
     (selection1, selection2, selection3, leagueID, maxPages, username, password) = selection_menu()
     url = buildURL(selection1, selection2, selection3, leagueID)
 
+    nameDic = {1: '2015_Total',
+               2: '2014_Total',
+               3: 'Last_30_D',
+               4: 'Last_14_D',
+               5: 'Last_7_D',
+               6: 'Today',
+               7: 'Projected'}
+
     if selection1 == 1:
         end_filename = 'Pitchers'
     if selection1 == 2:
         end_filename = 'Batters'
 
-    filename = 'data/FBB_data_' + str(leagueID) + '_' + end_filename + '_' + str(datetime.date.today()) + '.csv'
+    filename = 'data/FBB_data_' + str(leagueID) + '_' + end_filename + '_' + nameDic[selection2] +'_'+ str(datetime.date.today()) + '.csv'
     ofile = open(filename, "wb")
     writer = csv.writer(ofile, delimiter=',', escapechar=' ')
 
@@ -35,7 +43,7 @@ def main():
     br.submit()
 
     content = br.open(url + '0')
-    soup = BeautifulSoup(content)
+    soup = BeautifulSoup(content, "lxml")
     statsList = soup.findAll('th', {'class': 'Ta-end'})
     stats = ['Name', 'Team', 'Pos', 'Fantasy Team']
     for s in statsList:
@@ -55,7 +63,7 @@ def main():
         pageCount = str(pageNum * 25)
         print "Loading page", (pageNum + 1)
         content = br.open(url + pageCount)
-        soup = BeautifulSoup(content)
+        soup = BeautifulSoup(content, "lxml")
         players = soup.findAll('div', {'class': 'ysf-player-name Nowrap Grid-u Relative Lh-xs Ta-start'})
         dataList = soup.findAll('td', {'class': 'Ta-end'})
         fantasyTeams = soup.findAll('div', {'style': 'text-overflow: ellipsis; overflow: hidden;'})
@@ -116,15 +124,14 @@ def selection_menu():
 
     print "\nTime frame:"
     print "-------------"
-    print "1. 2015 Total\n2. 2014 Total\n3. Last 30 Days\n4. Last 14 Days\n5. Last 7 Days\n6. Today"
+    print "1. 2015 Total\n2. 2014 Total\n3. Last 30 Days\n4. Last 14 Days\n5. Last 7 Days\n6. Today\n7. Projected"
     print "-------------"
     try:
-        selection2 = input("Enter 1, 2, 3, 4, 5, or 6: ")
+        selection2 = input("Enter 1, 2, 3, 4, 5, 6 or 7: ")
     except:
         print "Bad Selection. Exiting..."
         sys.exit()
-    if (
-                            selection2 != 1 and selection2 != 2 and selection2 != 3 and selection2 != 4 and selection2 != 5 and selection2 != 6):
+    if (selection2 != 1 and selection2 != 2 and selection2 != 3 and selection2 != 4 and selection2 != 5 and selection2 != 6 and selection2 != 7):
         print "Bad Selection. Exiting..."
         sys.exit()
     print "\nChoose one:"
@@ -157,7 +164,7 @@ def selection_menu():
 
 
 def buildURL(type, time, available, leagueID):
-    begin_url = 'http://baseball.fantasysports.yahoo.com/b1/' + str(leagueID) + '/players?status='
+    begin_url = 'http://baseball.fantasysports.yahoo.com/b1/' + str(leagueID) + '/players?&sort=OR&sdir=1&status='
     end_url = '&myteam=0&sort=OR&sdir=1&count='
 
     if available == 1: status = 'ALL'
@@ -170,8 +177,9 @@ def buildURL(type, time, available, leagueID):
     if time == 4: timeFrame = 'L14'
     if time == 5: timeFrame = 'L7'
     if time == 6: timeFrame = 'L'
+    if time == 7: timeFrame = 'PSR'
 
-    mid_url = status + '&pos=' + pos + '&cut_type=33&stat1=S_' + timeFrame
+    mid_url = status + '&pos=' + pos + '&stat1=S_' + timeFrame
     return begin_url + mid_url + end_url
 
 
